@@ -45,7 +45,30 @@ var Footer = React.createClass({
 	}
 });
 
-var NewStage = React.createClass({
+var ShowModalButton = React.createClass({
+	showModal: function(){
+		$("#" + this.props.modalId ).modal('show');
+	},
+	render: function(){
+		return(
+        	<LefternRowItem well="false">
+				<div className="row">
+					<div className="col-md-5"/>
+					<div className="col-md-2">
+						<button type="button" className="btn btn-default btn-sm" onClick={this.showModal}>
+							{this.props.children}
+						</button>						
+						<br/>
+						<br/>
+					</div>
+					<div className="col-md-5"/>
+				</div>
+			</LefternRowItem>				
+		); 	
+	}
+});
+
+var StageModal = React.createClass({
 	getInitialState: function() {
 		return {
 			name: "",
@@ -62,41 +85,28 @@ var NewStage = React.createClass({
 	handleDescriptionChange: function(e) {
 	    this.setState({ description: e.target.value });        
 	},	
-	handleClick: function(){
-		$('#newStageModal' + this.props.index).modal('show');	
-	},
 	handleSubmit: function(){
 		var newStage = {
 			"name" : this.state.name,
 			"details" : this.state.details, 
 			"description" : this.state.description
 		};
-		this.props.addNewStage(this.props.index,newStage); 
-	},
-	render: function() {
-		return (
-			<div id="newStage">
-            	<LefternRowItem well="false">
-					<div className="row">
-						<div className="col-md-5"/>
-						<div className="col-md-2">
-							<button type="button" className="btn btn-default btn-sm" onClick={this.handleClick}>
-								<span className="glyphicon glyphicon-plus" aria-hidden="true"></span>
-							</button>						
-							<br/>
-							<br/>
-						</div>
-						<div className="col-md-5"/>
-					</div>
-				</LefternRowItem>				
+		this.props.handleSubmit(this.props.index,newStage);
+	},	
+	render: function(){
+		return(
+			<div>
+				<ShowModalButton modalId={this.props.modalId}>
+					{this.props.children}
+				</ShowModalButton>
 				<div className="container">
-					<div className="modal fade" id={"newStageModal" + this.props.index} role="dialog" >
+					<div className="modal fade" id={this.props.modalId} role="dialog" >
 						<div className="modal-dialog">
 
 							<div className="modal-content">
 								<div className="modal-header">
 									<button type="button" className="close" data-dismiss="modal">&times;</button>
-									<h4 className="modal-title">Add New Stage</h4>
+									<h4 className="modal-title">{this.props.title}</h4>
 								</div>
 
 								<div className="modal-body">
@@ -108,7 +118,7 @@ var NewStage = React.createClass({
 													className="form-control"
 													type="text" 
 													value={this.state.name} 
-													placeholder="New Stage Name"
+													placeholder="Stage Name"
 													onChange={this.handleNameChange}/><br/><br/>
 												<input 
 													className="form-control"
@@ -124,7 +134,7 @@ var NewStage = React.createClass({
 													onChange={this.handleDescriptionChange}/><br/><br/>
 												<div className="modal-footer">
 													<input type="button" className="btn btn-default" data-dismiss="modal" value="Cancel" />
-													<input type="submit" className="btn btn-default" data-dismiss="modal" onClick={this.handleSubmit} value="Add Stage"/>					
+													<input type="submit" className="btn btn-default" data-dismiss="modal" onClick={this.handleSubmit} value="Done"/>					
 												</div>
 								            </form>
 								        </div>
@@ -136,6 +146,26 @@ var NewStage = React.createClass({
 					</div>
 				</div>
 			</div>
+		); 	
+	}
+});
+
+var NewStage = React.createClass({
+	render: function() {
+		return (
+			<StageModal modalId={"newStageModal" + this.props.index} index={this.props.index} title="Add New Stage" handleSubmit={this.props.addNewStage} >	
+				<span className="glyphicon glyphicon-plus" aria-hidden="true"></span>
+			</StageModal>
+		); 
+	}
+});
+
+var EditStage = React.createClass({
+	render: function() {
+		return (
+			<StageModal modalId="editStageModal" index={this.props.index} title="Edit Stage" handleSubmit={this.props.editStage}>	
+				<span className="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+			</StageModal>
 		); 
 	}
 });
@@ -176,18 +206,17 @@ var Stage = React.createClass({
 	},
 	render: function(){
 		return(
-            <div className="row stage">
+            <div className="row stage" data-toggle="collapse" data-target={"#stageMore" + this.props.index}>
             	<LefternRowItem well="true">
             		<div className="row">
             			<div className="col-md-5">
-	                    	<h3>{this.props.name}</h3>
+	                    	<h1>{this.props.name}</h1>
 	                    </div>
             			<div className="col-md-4"/>
             			<div className="col-md-1">
-            				<button type="button" className="btn btn-default btn-sm" data-toggle="collapse" data-target={"#stageMore" + this.props.index}>
-								<span className="glyphicon glyphicon-pencil" aria-hidden="true"></span>
-							</button>
+							<EditStage index={this.props.index} editStage={this.editStage}/>
 						</div>
+
             			<div className="col-md-1">
             				<button type="button" className="btn btn-default btn-sm" onClick={this.removeStage}>
 								<span className="glyphicon glyphicon-remove" aria-hidden="true"></span>
@@ -200,6 +229,8 @@ var Stage = React.createClass({
 					  <div id={"stageMore" + this.props.index} className="collapse">
 	                    <h4>{this.props.details}</h4>
 	                    <p>{this.props.description}</p>
+	                    <h2>Tasks</h2>
+
 					  </div>
 					</div>	
                 </LefternRowItem>
@@ -246,6 +277,11 @@ var StageList = React.createClass({
 		stages.splice(index,0,newStage);
 	    this.setState({ stages: stages });        
 	},
+	editStage: function(index,newStage){
+		var stages = this.state.stages; 
+		stages.splice(index,0,newStage);
+	    this.setState({ stages: stages });        
+	},
 	removeStage: function(index){
 		var stages = this.state.stages; 
 		stages.splice(index,1);
@@ -260,7 +296,8 @@ var StageList = React.createClass({
 						details={stage.details}
 						description={stage.description}
 						index={index}
-						removeStage={this.removeStage}/>	
+						removeStage={this.removeStage}
+						editStage={this.editStage}/>	
 					<NewStage index={index+1} addNewStage={this.addNewStage}/>
 				</div>
 			); 
