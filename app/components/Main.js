@@ -174,9 +174,6 @@ var Stage = React.createClass({
 	removeStage: function(){
 		this.props.removeStage(this.props.index);	
 	},
-	editStage: function(){
-		alert('attempting to edit');
-	},
 	render: function(){
 		return(
             <div className="row stage">
@@ -187,7 +184,7 @@ var Stage = React.createClass({
 	                    </div>
             			<div className="col-md-4"/>
             			<div className="col-md-1">
-            				<button type="button" className="btn btn-default btn-sm" onClick={this.editStage}>
+            				<button type="button" className="btn btn-default btn-sm" data-toggle="collapse" data-target={"#stageMore" + this.props.index}>
 								<span className="glyphicon glyphicon-pencil" aria-hidden="true"></span>
 							</button>
 						</div>
@@ -198,8 +195,13 @@ var Stage = React.createClass({
 						</div>
             			<div className="col-md-1"/>
 					</div>
-                    <h4>{this.props.details}</h4>
-                    <p>{this.props.description}</p>
+
+					<div className="container">
+					  <div id={"stageMore" + this.props.index} className="collapse">
+	                    <h4>{this.props.details}</h4>
+	                    <p>{this.props.description}</p>
+					  </div>
+					</div>	
                 </LefternRowItem>
             </div>
 		); 
