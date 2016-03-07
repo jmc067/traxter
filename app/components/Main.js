@@ -70,11 +70,7 @@ var ShowModalButton = React.createClass({
 
 var StageModal = React.createClass({
 	getInitialState: function() {
-		return {
-			name: "",
-			details: "",
-			description: ""
-		}
+		return this.props.initialData();
 	},
 	handleNameChange: function(e) {
 	    this.setState({ name: e.target.value });        
@@ -151,9 +147,21 @@ var StageModal = React.createClass({
 });
 
 var NewStage = React.createClass({
+	initialData: function(){
+		return {
+			"name" : "",
+			"details" : "",
+			"description" : "" 
+		}
+	},
 	render: function() {
 		return (
-			<StageModal modalId={"newStageModal" + this.props.index} index={this.props.index} title="Add New Stage" handleSubmit={this.props.addNewStage} >	
+			<StageModal 
+				initialData={this.initialData}
+				modalId={"newStageModal" + this.props.index} 
+				index={this.props.index} 
+				title="Add New Stage" 
+				handleSubmit={this.props.addNewStage} >	
 				<span className="glyphicon glyphicon-plus" aria-hidden="true"></span>
 			</StageModal>
 		); 
@@ -161,9 +169,24 @@ var NewStage = React.createClass({
 });
 
 var EditStage = React.createClass({
+	initialData: function(){
+		return {
+			"name" : this.props.name,
+			"details" : this.props.details,
+			"description" : this.props.description
+		}
+	},
 	render: function() {
 		return (
-			<StageModal modalId="editStageModal" index={this.props.index} title="Edit Stage" handleSubmit={this.props.editStage}>	
+			<StageModal 
+				name={this.props.name}
+				details={this.props.details}
+				description={this.props.description}
+				initialData={this.initialData}
+				modalId={"editStageModal" + this.props.index} 
+				index={this.props.index} 
+				title="Edit Stage" 
+				handleSubmit={this.props.editStage}>	
 				<span className="glyphicon glyphicon-pencil" aria-hidden="true"></span>
 			</StageModal>
 		); 
@@ -204,6 +227,9 @@ var Stage = React.createClass({
 	removeStage: function(){
 		this.props.removeStage(this.props.index);	
 	},
+	editStage: function(index,newStage){
+		this.props.editStage(this.props.index,newStage);
+	},
 	render: function(){
 		return(
             <div className="row stage" data-toggle="collapse" data-target={"#stageMore" + this.props.index}>
@@ -214,7 +240,12 @@ var Stage = React.createClass({
 	                    </div>
             			<div className="col-md-4"/>
             			<div className="col-md-1">
-							<EditStage index={this.props.index} editStage={this.editStage}/>
+							<EditStage 
+								name={this.props.name}
+								details={this.props.details}
+								description={this.props.Description}
+								index={this.props.index} 
+								editStage={this.editStage}/>
 						</div>
 
             			<div className="col-md-1">
@@ -266,8 +297,6 @@ var StageList = React.createClass({
 		return {stages: sampleStageList};
 	},
 	handleAddStage: function(stageIndex,stage){
-		console.log(stageIndex);
-		console.log(stage);
 		var stages = this.state.stages; 
 		stages.splice(stageIndex, 0, stage);
 	    this.setState({ stages: stages });        
@@ -278,8 +307,9 @@ var StageList = React.createClass({
 	    this.setState({ stages: stages });        
 	},
 	editStage: function(index,newStage){
+		console.log(newStage);
 		var stages = this.state.stages; 
-		stages.splice(index,0,newStage);
+		stages.splice(index,1,newStage);
 	    this.setState({ stages: stages });        
 	},
 	removeStage: function(index){
